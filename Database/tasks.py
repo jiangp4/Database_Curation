@@ -1,9 +1,9 @@
 import os
 import pandas
-import Expression_Database
+#import Expression_Database
 
-from celery import shared_task
-from celery_progress.backend import ProgressRecorder
+#from celery import shared_task
+#from celery_progress.backend import ProgressRecorder
 from .models import Dataset
 
 from Project.models import Project, Association_Project_Dataset
@@ -14,9 +14,11 @@ from Curation.models import Curation
 GEO_Path = os.path.join(data_path, 'GEO', 'Data')
 AE_Path = os.path.join(data_path, 'AE', 'Data')
 
+# From Celery
+#@shared_task(bind=True)
+#def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, curators=None, flag_add_delete=True):
 
-@shared_task(bind=True)
-def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, curators=None, flag_add_delete=True):
+def prepare_curation_list(GEO_search, AE_search, ID_list, project=None, curators=None, flag_add_delete=True):
     # flag_add_delete : add (True) or delete (True) the input list
     result_lst = []
     
@@ -29,7 +31,8 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
     if curators is not None:
         curators = [Curator.objects.get(pk=curator) for curator in curators]
     
-    progress_recorder = ProgressRecorder(self)
+    # From Celery
+    #progress_recorder = ProgressRecorder(self)
     
     # build up search list first
     GEO_included = set()
@@ -120,6 +123,8 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
             error_lst.append('%s not included in existing datasets' % GSE_ID)
             continue
         
+            """
+            # no longer allow data download
             try:
                 info = Expression_Database.GEO_meta(GSE_ID, os.path.join(GEO_Path, GSE_ID), flag_enforce=False)
             except Exception as _:
@@ -140,6 +145,7 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
                     status = info['status'],
                     count = info['count']
                 )
+            """
         
         if info.status == 'Fail':
             error_lst.append(GSE_ID)
@@ -161,11 +167,11 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
             for curator in curators:
                 Curation.objects.get_or_create(curator=curator, project=project, dataset=info)
         
+        # From Celery
         #if len(result_lst) >= max_count:
         #    error_lst.append('Stop by exceeding maximum allowance %d' % max_count)
         #    break
-        
-        progress_recorder.set_progress(len(result_lst), len(GEO_included) + len(AE_included))
+        #progress_recorder.set_progress(len(result_lst), len(GEO_included) + len(AE_included))
     
     
     for AE_ID in AE_included:
@@ -179,6 +185,8 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
             error_lst.append('%s not included in existing datasets' % AE_ID)
             continue
         
+            """
+            # no longer allow data download
             try:
                 info = Expression_Database.AE_meta(AE_ID, os.path.join(AE_Path, AE_ID), flag_enforce=False)
             except Exception as _:
@@ -198,6 +206,7 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
                     status = info['status'],
                     count = info['count']
                 )
+            """
         
         if info.status == 'Fail':
             error_lst.append(AE_ID)
@@ -213,11 +222,7 @@ def prepare_curation_list(self, GEO_search, AE_search, ID_list, project=None, cu
             for curator in curators:
                 Curation.objects.get_or_create(curator=curator, project=project, dataset=info)
         
-        #if len(result_lst) >= max_count:
-        #    error_lst.append('Stop by exceeding maximum allowance %d' % max_count)
-        #    break
-        
-        progress_recorder.set_progress(len(result_lst), len(GEO_included) + len(AE_included))
+        #progress_recorder.set_progress(len(result_lst), len(GEO_included) + len(AE_included))
     
     return result_lst, error_lst
 

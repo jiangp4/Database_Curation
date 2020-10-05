@@ -475,11 +475,39 @@ def task_upload_download(request, pk):
     for curator in curators:
         Curation.objects.filter(project=project, curator=curator, category='').delete()
     
-    result = prepare_curation_list.delay(GEO_search, AE_search, ID_list, project=project, curators = [curator.pk for curator in curators], flag_add_delete = task_upload.add)   # @UndefinedVariable
+    # From Celery
+    result, error = prepare_curation_list(GEO_search, AE_search, ID_list, project=project, curators = [curator.pk for curator in curators], flag_add_delete = task_upload.add)
+
+    if len(result) > 0:
+        project = Project.objects.get(pk=project)
+        
+        for dataset_id in result:
+            Association_Project_Dataset.objects.get_or_create(project = project, dataset = Dataset.objects.get(pk=dataset_id))
+        
+        # test if keyword filter is necessary
+        filter_project_dataset_by_keywords(project)
     
+    return render(request, 'complete.html', {
+        'title': 'Task upload complete',
+        'description': '%d datasets uploaded' % len(result),
+        'fail': error,
+        })
+
+
+"""
+# From Celery
     return render(request, 'project/task_upload_download.html', {'task_id': result.task_id, 'title': task_upload.title})
 
-
+def task_upload_complete(request, task_id):
+    result = AsyncResult(task_id)
+    result = result.get()
+    
+    result, error = result
+    
+    project = Project.objects.get(pk=request.session['project_select'])
+    
+    
+"""
 
 
 def task_upload_clear(request):
@@ -495,30 +523,3 @@ def task_upload_clear(request):
     
     #render(request, 'complete.html', {'title': 'Successfully clear up upload history', 'description' : '%d files deleted' % count})
     return redirect('/project/task_upload/')    
-
-
-
-def task_upload_complete(request, task_id):
-    result = AsyncResult(task_id)
-    result = result.get()
-    
-    result, error = result
-    
-    project = Project.objects.get(pk=request.session['project_select'])
-    
-    if len(result) > 0:
-        for dataset_id in result:
-            Association_Project_Dataset.objects.get_or_create(
-                project = project,
-                dataset = Dataset.objects.get(pk=dataset_id),
-            )
-        
-        # test if keyword filter is necessary
-        filter_project_dataset_by_keywords(project)
-    
-    
-    return render(request, 'complete.html', {
-        'title': 'Task upload complete',
-        'description': '%d datasets uploaded' % len(result),
-        'fail': error,
-        })

@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -23,5 +23,5 @@ urlpatterns = [
     
     path('task_upload_clear/', views.task_upload_clear, name='task_upload_clear'),
     
-    re_path('task_upload_complete/celery-progress/(.+)/', views.task_upload_complete, name='task_upload_complete'),
+    #re_path('task_upload_complete/celery-progress/(.+)/', views.task_upload_complete, name='task_upload_complete'),
 ]

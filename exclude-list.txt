@@ -4,5 +4,5 @@ celery_progress
 settings.py
 log
 migrations
-sql
 *.pyc
+.git
