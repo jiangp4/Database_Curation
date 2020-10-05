@@ -1,0 +1,772 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+
+{% load static %}
+
+<script type="text/javascript">
+	
+	// global variables
+	var	input_column_list = [], ID_index = 0, undostack_table, vocabulary_map = null,
+		
+		// variables for select record cookie //"select_filter_column", 
+		select_column_lst = ["select_src_column", "select_dst_column"], select_column, select_val;
+		
+	function load_table_columns_to_options()
+	{
+		// Create form selection options dynamically through current table columns // select_filter_column = document.getElementById("select_filter_column"), 
+		var	select_src_column = document.getElementById("select_src_column"),
+			select_dst_column = document.getElementById("select_dst_column");
+		
+		// clear previous data, always one place holder option
+		//select_filter_column.length = 1;
+		
+	{% if data.column_annotate %}
+		select_src_column.length = 1;
+		select_dst_column.length = 1;
+	{% endif %}
+	
+		sorter_map = {}
+		
+		input_column_list.length = 0;
+		
+		$("#table_main thead tr th").each(function(i){
+			var ptr = $(this), base_class = ptr.attr("class").split(' ')[0];
+			
+			if(base_class == "input"){
+				sorter_map[i] = {sorter:'inputs'};		
+				input_column_list.push(i);
+				
+			}else if (base_class == "select"){
+				sorter_map[i] = {sorter:'select'};
+				input_column_list.push(i);
+				
+			}else if (base_class == "radio"){
+				sorter_map[i] = {sorter:'radio'};
+				input_column_list.push(i);
+				
+			}else if (base_class == "check"){
+				sorter_map[i] = {sorter:'checkbox'};
+				input_column_list.push(i);
+				
+			}else if(ptr.text().toUpperCase() == "ID"){
+				// if case ID is not the first column
+				ID_index = i;
+				
+			}else{
+				// add exception include rules 
+				if(ptr.text() == "Curator"){
+					input_column_list.push(i);
+				}
+			}
+			
+			//select_filter_column.options[select_filter_column.length] = new Option(ptr.text(), i);
+			
+	{% if data.column_annotate %}
+			if(base_class == "input"){
+				select_dst_column.options[select_dst_column.length] = new Option(ptr.text(), i);
+			}else{
+				select_src_column.options[select_src_column.length] = new Option(ptr.text(), i);
+			}
+	{% endif %}
+	
+		});
+		
+		$("table#table_main").tablesorter({
+			
+			widgets: ['resizable', 'stickyHeaders', 'filter'],
+			
+			widgetOptions: {
+				resizable: true,
+				resizable_addLastColumn: true,
+				stickyHeaders_attachTo : '.scrollTable',
+				
+				filter_columnFilters : true,
+				filter_hideFilters : true,
+				filter_ignoreCase : true,
+				filter_liveSearch : true,
+				filter_searchFiltered: true,
+				filter_startsWith : false,
+				},
+			
+			headers: sorter_map, // different sorters for input text and option selection
+		});
+		
+		forEach(document.getElementsByTagName('table'), function(table) {
+			if (table.className.search(/\bdraggable\b/) != -1) {
+				dragtable.makeDraggable(table);
+			}
+		});
+		
+		// recover previous selections and record current selections through Cookie
+		for(i=0; i < select_column_lst.length; i++)
+		{
+			select_column = select_column_lst[i];
+			select_val = $.cookie(select_column);
+			if (select_val) {$("#" + select_column).val(select_val);}
+		}
+	}
+	
+	function record_selection_value()
+	{
+		for(var i=0; i < select_column_lst.length; i++)
+		{
+			select_column = select_column_lst[i];
+			
+			$("#" + select_column).on("change", function(){
+				$.cookie(select_column, $(this).val(), {expires: 1})
+			});
+		}
+	}
+	
+	function load_auto_complete(target_lst = null)
+	{
+		// auto complete by controlled vocabulary
+	{% if data.vocabulary is not None %}
+		
+		var i, vocabulary_lst = "{{data.vocabulary}}".split(',');
+		for(i=0; i < vocabulary_lst.length; i++){vocabulary_lst[i] = vocabulary_lst[i].trim();}
+			
+		$("table input[type=text]").each(function(i){
+			$(this).autocomplete({source: vocabulary_lst});
+		});
+		
+		if(target_lst != null)
+		{
+			for(i=0; i < target_lst.length; i++){
+				$('#' + target_lst[i]).autocomplete({source: vocabulary_lst});
+			}
+		}
+	{% endif %}
+		
+	}
+	
+	
+	// Clipboard data to whole table column
+	document.addEventListener('paste',
+		function(event){
+			var column_copy_clipboard = document.getElementById("column_copy_clipboard");
+			
+			if(column_copy_clipboard.checked){
+				manipulate_table_columns("table_main", "select_src_column", "select_dst_column", "input_separator", "paste", event.clipboardData.getData('Text'));
+				undostack_table.push();
+				event.preventDefault();
+				
+				column_copy_clipboard.checked = false;
+			}
+		}
+	);
+	
+	// make functions available after the document is loaded
+	$(document).ready(function() {
+		// undo redo stack for table annotations
+		undostack_table = new UndoStack_Table("table_main");
+	
+	// highlight keywords
+	{% if data.keywords is not None %}
+		// create pattern list one time
+		var regex_lst = get_regex_lst("{{data.keywords|safe}}"),
+			highlight_keywords_bar = document.getElementById("highlight_keywords_bar"),
+			highlight_keywords_div = document.getElementById("highlight_keywords_div"),
+			table_head = $('#table_main thead tr'),
+			table_body = $('#table_main tbody tr'),
+			progress, i=0,
+			
+			// fast evaluation of function every 1ms, until clearInterval
+			progress_bar_id = setInterval(highlight_table_row, 1);
+		
+		// highlight table header if any first
+		var lst = $(table_head).children();
+		
+		$(lst).each(function(j) {
+			highlight_words(regex_lst, lst[j]);	
+		});
+		
+		// highlight table body with progress bar
+		function highlight_table_row()
+		{
+			var lst = $(table_body[i]).children();
+			
+			progress = Math.round(100.0* (i+1)/table_body.length);
+			highlight_keywords_bar.style.width = progress + "%";
+			highlight_keywords_bar.innerHTML = progress + "%";
+			
+			$(lst).each(function(j) {
+				highlight_words(regex_lst, lst[j]);	
+			});
+			
+			i++;
+			
+			if (i >= table_body.length) {
+				clearInterval(progress_bar_id);
+				highlight_keywords_div.style.display = "none";
+				
+				// push the initial table state ONLY after finish keyword search
+				undostack_table.push();
+			}
+		}
+	
+	{% else %}
+		// push the initial table state
+		undostack_table.push();
+	
+	{% endif %}
+	
+	
+	// vocabulary map conversions
+	{% if data.vocabulary_map is not None %}
+		vocabulary_map = [];
+		
+		{% for pattern, target in data.vocabulary_map.items %}
+			vocabulary_map.push([new RegExp("{{pattern|safe}}", "gi"), "{{target|safe}}"]);
+		{% endfor %}
+	
+	{% endif %}
+	
+	
+		// dynamic option loads
+		load_table_columns_to_options();
+		
+		record_selection_value();
+		
+		load_auto_complete(['input_replace_to']);
+		
+		// Table to CSV file
+		$("#export_table_data").click(
+			function (event) {
+				var outputFile = window.prompt("Please input the name of output csv file ?") || 'export_{{data.title}}';
+				outputFile = outputFile.replace('.csv','') + '.csv';
+				export_table_csv.apply(this, [$('#table_data > table'), outputFile]);
+			}
+		);
+		
+		// Submit table data back to server
+		$("#submit_table_data").click(
+			function (event)
+			{
+				var	table,
+					parameters = {
+						extractor: get_table_cell,
+						onlyColumns: input_column_list.concat([ID_index]),
+						};
+				
+				table = $('table#table_main').tableToJSON(parameters);
+				event.preventDefault();
+				
+				$.ajaxSetup({
+					headers: { "X-CSRFToken": "{{csrf_token}}"}
+				});
+				
+				$.ajax({
+					type : "POST",
+					contentType: 'application/json; charset=utf-8',
+					
+					data : JSON.stringify({
+						'action': 'submit',
+						'table': table
+						}),
+						
+					success : function(result, status, xhr){
+						
+						if(result.message.length > 0)
+						{
+							alert(result.message);
+						}
+						
+						if (result.success_url == undefined) result.success_url = '';
+						
+						window.location.href = result.success_url;
+					},
+					
+					error : function(xhr, errmsg, err){
+						alert(err + ': ' + xhr.responseJSON.error);
+					},
+					
+					beforeSend: function(){
+					{% if data.flag_longwait %}
+						// Show image container
+						$("#loader").show();
+					{% endif %}
+					},
+					
+					complete: function(){
+						// Hide image container
+						$("#loader").hide();
+					},
+					
+				});
+			}
+		);
+		
+		
+		$("#download_table_data").click(
+				function (event)
+				{
+					event.preventDefault();
+					
+					$.ajaxSetup({
+						headers: { "X-CSRFToken": "{{csrf_token}}"}
+					});
+					
+					$.ajax({
+						type : "POST",
+						contentType: 'application/json; charset=utf-8',
+						data : JSON.stringify({'action': 'download'}),
+							
+						success : function(result, status, xhr){
+							
+							if(result.message.length > 0)
+							{
+								alert(result.message);
+							}
+							
+							if (result.success_url == undefined) result.success_url = '';
+							
+							window.location.href = result.success_url;
+						},
+						
+						error : function(xhr, errmsg, err){
+							alert(err + ': ' + xhr.responseJSON.error);
+						},
+						
+						beforeSend: function(){
+						{% if data.flag_longwait %}
+							// Show image container
+							$("#loader").show();
+						{% endif %}
+						},
+						
+						complete: function(){
+							// Hide image container
+							$("#loader").hide();
+						},
+						
+					});
+				}
+			);
+			
+		
+		$("#submit_table_replace").click(
+			function (event)
+			{
+				// no trim, exact value
+				var pattern = document.getElementById("input_replace_from").value,
+					target = document.getElementById("input_replace_to").value;
+				
+				// test if pattern is a regex
+				pattern = convertRegExp(pattern);
+				
+				manipulate_table_columns("table_main", "select_src_column", "select_dst_column", "input_separator", "replace", pattern, target);
+				undostack_table.push();
+			}
+		);
+		
+		$("#submit_table_separate_front").click(
+			function (event)
+			{
+				var separator = document.getElementById("input_separate").value;
+				
+				// test if separator is a regex
+				separator = convertRegExp(separator);
+				
+				manipulate_table_columns("table_main", "select_src_column", "select_dst_column", "input_separator", "separate_front", separator);
+				undostack_table.push();
+			}
+		);
+		
+		$("#submit_table_separate_rear").click(
+			function (event)
+			{
+				var separator = document.getElementById("input_separate").value;
+				
+				// test if separator is a regex
+				separator = convertRegExp(separator);
+				
+				manipulate_table_columns("table_main", "select_src_column", "select_dst_column", "input_separator", "separate_rear", separator);
+				undostack_table.push();
+			}
+		);
+	});
+</script>
+
+
+
+<style>
+
+/* Progress bar for keyword highlight */
+#highlight_keywords_progress {
+	width: 50%;
+	background-color: grey;
+}
+
+#highlight_keywords_bar {
+	width: 0%;
+	height: 20px;
+	background-color: green;
+}
+
+/* Autocomplete selection */
+.ui-menu-item .ui-menu-item-wrapper.ui-state-active {
+	background: #6693bc !important;
+	font-weight: bold !important;
+	color: #ffffff !important;
+}
+
+.scrollTable {
+	position: relative;
+	height: {% if data.table|length > 50 or data.title == 'dataset information' %}90vh{% else %}auto{% endif %};
+	overflow-y: auto;
+}
+
+
+.roundbox {
+	border-radius: 10px;
+	border: 2px solid #73AD21;
+	padding: 5px 10px;
+	width: auto;
+	height: auto;
+}
+
+/* Minimum table cell width */
+td:before {
+	content: '';
+	display: block;
+	width: 5em;
+}
+
+
+
+/* Table column filter */
+.tablesorter .filtered {
+	display: none;
+}
+
+
+/* hidden filter row */
+.tablesorter-filter-row.hideme td {
+	/* thickness of the closed filter row (height = padding x 2) */
+	padding: 5px;
+	margin: 0;
+	line-height: 0;
+	cursor: pointer;
+}
+
+.tablesorter-filter-row.hideme * {
+	height: 1px;
+	min-height: 0;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	
+	/* don't use visibility: hidden because it disables tabbing */
+	opacity: 0;
+	filter: alpha(opacity=0);
+}
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+{% if flag_tight %} <div class="row"> {% endif %}
+
+{% if title is not None %}
+<div class="row">
+	<h2>{{title}}</h2>	
+</div>
+{% endif %}
+
+<!-------------------------------------------------------------------------------------------------->
+<!-- progress bar for Some data intensive computation here. -->
+{% if data.keywords is not None %}
+
+<div id="highlight_keywords_div" class="div-inline" style="display:{% if data.table|length < 100 %}none{% endif %}">
+	<label>Parse table</label>
+	<div class="vr">&nbsp;</div><div class="vr">&nbsp;</div>
+	<div id="highlight_keywords_progress">
+		<div id="highlight_keywords_bar"></div>
+	</div>
+</div>
+{% endif %}
+
+
+<!-- Copy tools to annotate sample information table -->
+{% if data.column_annotate %}
+
+	<form class="form-inline">
+	{% csrf_token %}
+	
+	<fieldset>
+		<div>
+			<label title="Column selector for assist functions">Column</label>
+	
+			<select id="select_src_column">
+				<option selected disabled>Source</option>
+				<!-- Dynamically insert source columns -->
+			</select>
+			
+			<select id="select_dst_column">
+				<option selected disabled>Destination</option>
+				<!-- Dynamically insert destination columns -->
+			</select>
+			
+			<div class="vr">&nbsp;</div>
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_separator', 'copy');undostack_table.push();" title="Copy the source column to the destination column">Copy</a>
+			</div>
+			
+			<div class="vr">&nbsp;</div>
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_separator', 'clear');undostack_table.push();" title="Clear up the destination column">
+				Clear
+			</a>
+			</div>
+			
+			<div class="vr">&nbsp;</div>
+			<div class="button">
+			<a href="#" role="button" onclick="delete_table_column('table_main', 'select_dst_column');undostack_table.push();" title="Delete the destination column from table">Delete</a>
+			</div>
+			
+			<div class="vr">&nbsp;</div>
+			<div>
+				<div class="button">
+				<a href="#" role="button" onclick="append_table_column('table_main', 'column_append_name');load_auto_complete();undostack_table.push();" title="Add a new destination column">
+					Add
+				</a>
+				</div>
+				<input type="text" id="column_append_name" title="new destination column name" style="width:10em;" placeholder="new column name">
+			</div>
+			
+		</div>
+		
+		<div class="vr">&nbsp;</div><div class="vr">&nbsp;</div>
+		
+		<div>
+			<label title="Record the action history of assist functions">History</label>
+			<div class="vr">&nbsp;</div>
+			
+			<div class="button">
+			<a href="#" role="button" id="annotation_undo_button" onclick="undostack_table.undo();load_auto_complete();" title="Undo one step action">&laquo; Undo</a>
+			</div>
+			
+			<div class="button">
+			<a href="#" role="button" id="annotation_redo_button" onclick="undostack_table.redo();load_auto_complete();" title="Redo one step action">Redo &raquo;</a>
+			</div>
+		</div>
+		
+		<br>		
+		<label title="Paste a column from excel or a text content into the destination column. Triggered by Ctrl (or Command for Mac) +v. Please put your mouse outside the table area when pasting. The checkbox will be unselected automatically after pasting to prevent unexpected further pasting.">Paste From Clipboard</label>
+		<input type="checkbox" id="column_copy_clipboard" value="check" title="Paste a column from excel or a text content into the destination column. Triggered by Ctrl (or Command for Mac) +v. Please put your mouse outside the table area when pasting. The checkbox will be unselected automatically after pasting to prevent unexpected further pasting.">
+	
+	</fieldset>
+	</form>
+
+	<form class="form-inline">
+	{% csrf_token %}
+	
+	<fieldset>
+		<div>
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_separator', 'concatenate_front');undostack_table.push();" title="Join the source column to the front of destination column with a separator in the text input box">
+				Join Front
+			</a>
+			</div>
+			
+			<input type="text" id="input_separator" value="." title="separator to join">
+			
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_separator', 'concatenate_rear');undostack_table.push();" title="Join the source column to the back of destination column with a separator in the text input box">
+				Join Back
+			</a>
+			</div>
+		</div>
+		
+		<div class="vr">&nbsp;</div><div class="vr">&nbsp;</div><div class="vr">&nbsp;</div>
+		
+		<div>
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_append', 'append_front');undostack_table.push();" title="Append the input text to the front of destination column.">
+				Append Front
+			</a>
+			</div>
+					
+			<input type="text" id="input_append" value="" title="content to append" style="width:7em;" placeholder="e.g.,: hour">
+			
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_append', 'append_rear');undostack_table.push();" title="Append the input text to the back of destination column.">
+				Append Back
+			</a>
+			</div>
+		</div>
+		
+		
+		<div class="vr">&nbsp;</div><div class="vr">&nbsp;</div><div class="vr">&nbsp;</div>
+		
+		<div>
+			<div class="button">
+			<a href="#" id="submit_table_separate_front" role="button" title="Split a substring from the front of destination column">Split Front</a>
+			</div>
+			
+			<input type="text" id="input_separate" title="separator to split the table cell content, regular expression is available with the advanced setting in curator profile" style="width:10em;" placeholder="e.g.,: rep">
+			
+			<div class="button">
+			<a href="#" id="submit_table_separate_rear" role="button" title="Split a substring from the back of destination column">Split Back</a>
+			</div>
+		</div>
+	
+	</fieldset>
+	</form>
+	
+	
+	
+	<form class="form-inline">
+	{% csrf_token %}
+	
+	<fieldset>
+		<div>
+			<div class="button">
+			<a href="#" id="submit_table_replace" role="button" title="Replace the pattern (From) to target (To) in the destination column">Replace</a>
+			</div>
+			<input type="text" id="input_replace_from" title="pattern string to replace, case insensitive, regular expression is available with the advanced setting in curator profile" style="width:10em;" placeholder="From">
+			<input type="text" id="input_replace_to" title="replace target string" style="width:10em;" placeholder="To">
+		</div>
+		
+		{% if data.vocabulary_map is not None %}
+			<div class="vr">&nbsp;</div><div class="vr">&nbsp;</div><div class="vr">&nbsp;</div>
+			
+			<div class="button">
+			<a href="#" role="button" onclick="manipulate_table_columns('table_main', 'select_src_column', 'select_dst_column', 'input_separator', 'translate', null, null, vocabulary_map);undostack_table.push();" title="Standardize the destination column words with the vocabulary map defined in the project setting.">Translate Vocabulary</a>
+			</div>
+		{% endif %}
+		
+	</fieldset>
+	</form>
+	
+{% endif %}
+
+<!-------------------------------------------------------------------------------------------------->
+<!-- Table data -->
+<p>Total {{data.table|length}} rows.</p>
+
+<div>
+	<div id="table_data" class="scrollTable">
+	<table id="table_main" class="tablesorter draggable">
+		<thead>
+		<tr>
+			{% for v in data.header %}
+				<th class="{{v.1}}" title="{{v.2}}">{{v.0}}</th>
+			{% endfor %}
+		</tr>
+		</thead>
+		
+		<tbody>
+			{% for line in data.table %}
+			<tr> 
+				{% for v in line %}
+					{% if v.1 == 'url' %}
+						<td>
+						{% if v.2|length > 0 %}
+							<a href={{v.2}} target="_blank">{{v.0}}</a>
+						{% else %}
+							{{v.0}}
+						{% endif %}
+						</td>
+					
+					{% elif v.1 == 'url_lst' %}
+						<td>
+						{% for entry in v.2 %}
+							<a href={{entry.1}} target="_blank">{{entry.0}}</a>
+							{% if not forloop.last %} &nbsp,&nbsp {% endif %}
+						{% endfor %}
+						</td>
+						
+					{% elif v.1 == 'sample_info' %}
+						<td><a href=sample/{{v.2}}/ target="_blank">Link</a></td>
+					
+					{% elif v.1 == 'select' %}
+						<td>
+							<select>
+								<option value="" {% if v.0 is None %}selected{% endif %}></option>
+								<option value="yes" {% if v.0 == 'Yes' %}selected{% endif %}>Yes</option>
+								<option value="no"{% if v.0 == 'No' %}selected{% endif %}>No</option>
+							</select>
+						</td>
+					
+					{% elif v.1 == 'radio' %}
+						<td><input type="radio" name="{{v.2}}" {{v.0}}></td>
+					
+					{% elif v.1 == 'input' %}
+						<td><input type="text" value="{{v.0}}"></td>
+					
+					{% elif v.1 == 'check' %}
+						<td><input type="checkbox" {{v.0}}></td>
+					
+					{% else %}
+						<td>{{v.0}}</td>
+					{% endif %}
+				
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	</div>
+	
+	<br>
+	
+	<!-- Panel of buttons for table control -->
+	<form class="form-inline">
+	{% csrf_token %}
+		<div class="slot-item only-SI large-2 columns">
+			<div class='button' align="left">
+				<a role="button" id="export_table_data" title="Download the HTML table to excel CSV.">
+					Export to CSV
+				</a>
+			</div>
+		</div>
+		
+		{% if data.full_table is not None %}
+		<div class="slot-item only-SI large-2 columns">
+			<div class='button' align="center">
+				<a role="button" href="/download/{{data.full_table}}/" title="Download the full table with more comprehensive information than the HTML table above.">
+					Download full table
+				</a>
+			</div>
+		</div>
+		{% endif %}
+		
+
+		{% if not data.simple_mode %}
+			<div id="loader" class="slot-item only-SI large-3 columns" style="display: none;">
+				<h2>In progress... Please wait</h2>
+				<img src="{% static 'img/tuzki_working.gif' %}" width='100px' height='50px'>
+			</div>
+			
+			<div class="slot-item only-SI large-2 columns">
+				<div class='button' align="left">
+					<a role="button" id="submit_table_data" title="Submit the table back to server.">
+						Submit
+					</a>
+				</div>
+			</div>
+			
+			{% if flag_download %}
+				<div class="slot-item only-SI large-2 columns">
+					<div class='button' align="left">
+						<a role="button" id="download_table_data" title="Download the table back to server.">
+							Download
+						</a>
+					</div>
+				</div>
+			{% endif %}
+		
+		{% endif %}
+	
+	</form>
+
+</div>
+
+<br><br>
+
+{% if flag_tight %} </div> {% endif %}
+{% endblock %}

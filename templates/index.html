@@ -1,0 +1,21 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row">
+
+<h2>Topic-focused Data Curation Platform</h2>
+<p>The NCI Data Curation Platform aims to enable researchers to annotate the meta information of datasets in the GEO and ArrayExpress databases to enable automatic algorithmic analysis. Focusing on a research topic, users can input a query result, composing a list of dataset IDs, downloaded from the GEO and ArrayExpress databases. The server will download the meta information of uploaded dataset IDs. Then, curators will annotate the meta-information based on a set of pre-defined schemes. The annotated sample information will be combined with the processed data matrices from GEO and ArrayExpress databases to enable algorithmic analysis.</p>
+
+<img src="{% static 'img/Curation_Flow.png' %}" width="100%">
+
+</div>
+<br>
+
+{% endblock %}

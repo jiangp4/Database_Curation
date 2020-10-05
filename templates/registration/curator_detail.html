@@ -1,0 +1,28 @@
+{% extends "base_main.html" %}
+
+{% block content %}
+	<div class="row">
+		<h2>Curator information.</h2>
+		<p>
+			<b>First Name</b>: {{curator.first_name}} &nbsp;
+			<b>Last Name</b>: {{curator.last_name}} &nbsp;
+			<b>Education</b>: {{curator.education}} &nbsp;
+			<b>Birthday</b>: {{curator.birth_date}} &nbsp;
+			<b>Email</b>: <a href="mailto: {{curator.email}}">{{curator.email}}</a>
+		</p>
+		
+		{% if curator.institute %}
+			<p><b>Institute</b>: {{curator.institute}}</p>
+		{% endif %}
+		
+		{% if curator.bio %}
+			<p><b>Biograph</b>: {{curator.bio}}</p>
+		{% endif %}
+		
+		{% if curator.url %}
+			<p><b>URL</b>: <a href="{{curator.url}}" target="_blank">{{curator.url}}</a></p>
+		{% endif %}
+				
+		<p></p>
+	</div>
+{% endblock %}

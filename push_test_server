@@ -1,0 +1,1 @@
+rsync --exclude-from="exclude-list.txt" --delete -avz --progress * jiangp4@10.208.7.4:~/workspace/Database_Curation/

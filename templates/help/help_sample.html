@@ -1,0 +1,41 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<h2>Sample annotation table</h2>
+
+<p>
+In the sample annotation table, you will label a few destination columns to enable automatic analysis by computer programs. Each row represents one sample in the current experiment. Please review all meta information columns and create the destination columns in standardized vocabularies. You can either manually input the values or utilize the assist functions provided below. Finally, <strong>a computer program should be able to analyze this dataset automatically through the destination columns</strong> (together with the genomics data processed in a separate process).
+<br><br>
+Many features in the sample annotation table are the same as those in the dataset selection table in <a href="/help/help_dataset/" target="_blank">Stage one</a>, such as the column filters, progress bars, scroll bars, table headers, and result submission. Therefore, the following functions are unique to the annotation functions in the current stage.
+</p>
+
+<img src="{% static 'img/Annotation Sample.png' %}">
+<br><br>
+
+<ol>
+	<li id="f1"><strong>Column selection</strong>. All assist functions are targeting a <strong>Destination Column</strong>. Functions, including <i onmouseover="highlight_mouseover('f2,f2a')" onmouseout="highlight_mouseout('f2,f2a')">Copy (2a)</i> and <i onmouseover="highlight_mouseover('f7')" onmouseout="highlight_mouseout('f7')">Join (7)</i>, will directly involve a <strong>Source Column</strong>.</li>
+	<li id="f2"><strong>Copy content</strong> to the destination column.</li>
+		<ul>
+			<li id="f2a">From the source column</li> 
+			<li id="f2b">From the Clipboard, triggered by Ctrl + V or Command + V (Mac OS). You can either paste a whole column copied from an Excel table or a text content to all cells in the destination column.</li>			
+		</ul>
+	<li id="f3"><strong>Clear all content</strong> in the destination column.</li>
+	<li id="f4"><strong>Delete</strong> the destination column.</li>
+	<li id="f5"><strong>Add a new</strong> destination column.</li>
+	<li id="f6"><strong>Undo or Redo annotations</strong> from the assist functions.</li>
+	<li id="f7"><strong>Join</strong> the source column to the front or back of the destination column with the separator in the text input box.</li>
+	<li id="f8"><strong>Append</strong> the word in the text input box to the front or back of the destination column.</li>
+	<li id="f9"><strong>Split a substring</strong> from the front or back of the destination column. In each cell, the content will be split by the text in the input box. Advanced users can input regular expressions by using “/pattern/” or “/pattern/i” for case insensitive queries.</li>
+	<li id="f10"><strong>Replace substrings</strong> (text input box “From”) in the destination columns to a target string (text input box “To”). Advanced users can input regular expressions by using “/pattern/” or “/pattern/i” for case insensitive queries.</li>
+	<li id="f11"><strong>Translate contents to standardized vocabularies</strong> in the destination column. In the project setting, the user may define a vocabulary map from non-standard texts to their synonyms in controlled vocabularies. Be cautious that the automatic translation might misinterpret the content, and human proofreading is always necessary.</li>
+</ol>
+
+</div>
+
+{% endblock %}

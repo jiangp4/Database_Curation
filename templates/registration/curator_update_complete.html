@@ -1,0 +1,12 @@
+{% extends "base_main.html" %}
+
+{% block content %}
+{% load static %}
+
+<div class="row">
+	<h2>Successful user information change of {{user.get_username}}.</h2>
+	<img src="{% static 'img/tuzki_awesome.gif' %}" />
+	<br><br>
+</div>
+
+{% endblock %}

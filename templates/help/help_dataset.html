@@ -1,0 +1,38 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<h2>Dataset selection table</h2>
+
+<p>In the main menu, please click the {% if user.is_authenticated %}<a href="/curation/dataset/" target="_blank">ANNOTATE item under CURATION</a>{% else %}ANNOTATE item under CURATION{% endif %} to open the dataset selection table. You will determine which datasets are relevant to the study topic of the project. Each row represents a candidate dataset in your project. Please review their study design columns and sample annotation tables (if necessary) to determine the Yes or No status.</p>
+
+<img src="{% static 'img/Annotation Dataset.png' %}">
+<br><br>
+
+<ol>
+	<li id="f1"><strong>Progress bar for parsing data</strong>. If the current project contains many candidate datasets, parsing their study design information will take some time (<i onmouseover="highlight_mouseover('f4')" onmouseout="highlight_mouseout('f4')">refer to function 4</i>). Please wait until the process finishes and the progress bar disappears. If this step takes too long, you can close the <a href="/help/help_curator/" target="_blank">highlight flag</a> in your user profile.</li>
+	<li id="f2"><strong>Table header</strong>. Using the mouse cursor, you can click each column to sort in ascending or descending order and resize the width by pulling on the column boundary. You can also click and hold on each column and drag it to a different position to reorder.</li>
+	
+	<li id="f3"><strong>Table row filter</strong>. Please move your mouse a little beneath the header bar to trigger the filter row. 
+	<br>
+	<img src="{% static 'img/Annotation Dataset filter.png' %}" style="width:90%">
+	<br>
+	If you only want to work on a subset of rows, you input keywords in the filter boxes beneath columns. Advanced users can input regular expressions by using “/pattern/” or “/pattern/i” for case insensitive queries. The result submission (<i onmouseover="highlight_mouseover('f9')" onmouseout="highlight_mouseout('f9')">refer to function 9</i>) will only include rows that passed the filter.</li>
+	
+	<li id="f4"><strong>Keyword highlighting</strong>. If you have input keywords in your project setup, the webpage will display all matches. This step will trigger the parsing progress bar (<i onmouseover="highlight_mouseover('f1')" onmouseout="highlight_mouseout('f1')">refer to function 1</i>).</li>
+	<li id="f5"><strong>Sample count with link to the sample annotation table</strong>. The number of samples in each dataset. You can click the number and open the sample annotation table. For many cases, you have to look at the annotation table together with the study design to determine the relevance of a dataset. If a study is relevant, you need to curate the sample annotation table to enable automatic processing in the <a href="/help/help_sample/" target="_blank">Stage two</a>.</li>	
+	<li id="f6"><strong>Dataset status</strong>. Annotate the relevance of a dataset as Yes, No, or Blank (not discussed). A dataset with blank annotation will be listed again in the next round of annotation. Once you are ready (even without annotating all datasets), please scroll down the whole page to the bottom and click the “Submit” button (<i onmouseover="highlight_mouseover('f9')" onmouseout="highlight_mouseout('f9')">refer to function 9</i>).</li>
+	<li id="f7"><strong>Scrollbars</strong>. For dataset table vertically <strong>(a)</strong>, horizontally <strong>(b)</strong> and the whole page <strong>(c)</strong>.</li>
+	<li id="f8"><strong>Export the table to a CSV file</strong>.</li>
+	<li id="f9"><strong>Submit your annotation</strong>. If successful, you should see a confirmation window and click OK. You don’t have to determine the relevance of all the datasets for submission (<i onmouseover="highlight_mouseover('f6')" onmouseout="highlight_mouseout('f6')">refer to function 6</i>). A dataset with blank annotation will show up when you open the annotation page again. If table filter (<i onmouseover="highlight_mouseover('f3')" onmouseout="highlight_mouseout('f3')">refer to function 3</i>) is involved, only rows passed the keyword filter will be submitted.</li>
+</ol>
+
+</div>
+
+{% endblock %}

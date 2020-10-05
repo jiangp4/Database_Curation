@@ -1,0 +1,14 @@
+{% extends "base_main.html" %}
+
+{% block base_content %}
+<div class="row">
+  <h2>Are you sure you want to delete "{{object.ID}} : {{object.title}}"?</h2>
+  <p></p>
+  
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Delete</button>
+  </form>
+ </div>
+{% endblock %}

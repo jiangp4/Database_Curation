@@ -1,0 +1,103 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load basename_tag %}
+
+<script type="text/javascript">	
+	function select_curator(username)
+	{
+		var	checkbox = document.getElementById("check_" + username),
+			text_input = document.getElementById("{{form.curator.auto_id}}"),
+			curators;
+		
+		if(checkbox.checked){
+			text_input.value += username + '\n';
+		}else{
+			curators = text_input.value.trim().split('\n');
+			curators.splice(curators.indexOf(username), 1);
+			text_input.value = curators.join('\n');
+		}
+	}
+</script>
+	
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+	<div class="large-6 columns">
+		<h2>Upload task assignments</h2>
+		<form method="post" enctype="multipart/form-data">
+		{% csrf_token %}
+			{{ form.as_p }}
+			<button type="submit">Submit</button>
+		</form>
+		
+		{% if history is not None %}
+		<table id="upload_history">
+			<thead>
+			<tr>
+				<th>Title</th>
+				<th title="Add (True) or Remove (False) uploaded dataset IDs">Add</th>
+				<th>Creator</th>
+				<th>Time Upload</th>
+				<th>File</th>
+			</tr>
+			</thead>
+		
+			<tbody>
+			{% for line in history %}
+			<tr>
+				<td>{{line.title}}</td>
+				<td>{{line.add}}</td>
+				<td>{{line.creator}}</td>
+				<td>{{line.time_upload}}</td>
+				<td> <a href="/download/{{line.task_file.path}}/" target="_blank">{{line.task_file|basename}}</a></td>
+			</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+		
+		<div class="button">
+			<a href="/project/task_upload_clear" role="button" title="Clear up all upload history">Clear History</a>
+		</div>
+		{% endif %}
+		
+		<br><br>
+	</div>
+
+	<div class="large-6 columns">
+		{% if curator is not None %}
+		<h2>Curator assignments</h2>
+		<p>Assign task curators. Leave empty if only visible to project owners.</p>
+		
+		<table id="curator_assignment">
+			<thead>
+			<tr>
+				<th>Username</th>
+				<th>Name</th>
+				<th>Institute</th>
+				<th>Include</th>
+			</tr>
+			</thead>
+			
+			<tbody>
+			{% for line in curator %}
+				<tr>
+					<td><a href="{{line.0.1}}" target="_blank">{{line.0.0}}</a></td>
+					<td>{{line.1}}</td>
+					<td>{{line.2}}</td>
+					<td>
+					<input id="check_{{line.0.0}}" type="checkbox" value="check" onchange="select_curator('{{line.0.0}}')">
+					</td>
+				</tr>
+			{% endfor %}
+				
+			</tbody>
+		</table>
+		{% endif %}
+	</div>
+	
+</div>
+
+{% endblock %}

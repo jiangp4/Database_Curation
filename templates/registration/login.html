@@ -1,0 +1,22 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+	<h2>Login</h2>
+	
+	{% if form.errors %}
+		<p>If you forget your account information, <a href="/accounts/password_reset">click here</a> to reset</p>
+	{% endif %}
+	    
+	<form method="post" autocomplete="off">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<button type="submit">Login</button>
+	</form>
+</div>
+
+{% endblock %}

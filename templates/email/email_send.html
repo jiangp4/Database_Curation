@@ -1,0 +1,39 @@
+{% extends "base_main.html" %}
+
+{% block content %}
+
+<div class="row">
+
+	<!-- div class="slot-item only-SI large-6 columns">
+	<h2>Report technical problems</h2>
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+			<button type="submit">Send</button>
+		</form>
+	</div-->
+	
+	<div class="slot-item only-SI large-5 columns">
+	<h2>Ask questions</h2>
+	
+		<div class="content">
+			<h4>
+				<a href="https://ccr.cancer.gov/cancer-data-science-laboratory/peng-jiang" target="_blank">Peng Jiang</a>
+				<br>
+				Stadtman Tenure-track Investigator
+				<br><br>
+				<a href="https://ccr.cancer.gov/cancer-data-science-laboratory/" target="_blank">Cancer Data Science Lab</a>
+				<br>
+				<a href="https://ccr.cancer.gov/" target="_blank">Center for Cancer Research</a>
+				
+			</h4>
+			
+			<h4>
+				Email: <script type="text/javascript">print_mail_to_link("peng.jiang", "nih.gov")</script>
+			</h4>
+			
+		</div>
+	</div>
+
+</div>
+{% endblock %}

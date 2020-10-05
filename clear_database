@@ -1,0 +1,9 @@
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+find . -path "*/migrations/*.pyc"  -delete
+
+mysqladmin -u peng_jiang -pNCI_PJ_123 drop Database_Curation
+mysqladmin -u peng_jiang -pNCI_PJ_123 create Database_Curation
+
+python manage.py makemigrations
+python manage.py migrate
+#python manage.py createsuperuser

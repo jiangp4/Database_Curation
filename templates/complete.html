@@ -1,0 +1,49 @@
+{% extends "base_main.html" %}
+
+{% block content %}
+{% load static %}
+{% load class_tag %}
+
+<div class="row">
+	<h2>{{title}}</h2>
+	<p>{{description}}</p>
+	
+	{% if success|length > 0 %}
+	<div class="large-3 columns">
+		<h3>Success list</h3>
+		{% for ds in success%}
+			{% if ds|get_class == 'str' %}
+				{{ds}}
+			{% else %}
+				<a href="{{ds.1}}" target="_blank">{{ds.0}}</a>
+			{% endif %}
+			<br>
+		{% endfor %}
+	</div>
+	{% endif %}
+	
+	<div class="large-3 columns">
+	<img src="{% static 'img/tuzki_awesome.gif' %}" />
+	</div>
+	
+	
+	{% if fail|length > 0 %}
+	<div class="large-6 columns">
+		<h3>Failure list</h3>
+		{% for ds in fail%}
+			{% if ds|get_class == 'str' %}
+				{{ds}}
+			{% else %}
+				<a href="{{ds.1}}" target="_blank">{{ds.0}}</a>
+			{% endif %}
+			<br>
+		{% endfor %}
+	</div>
+	{% endif %}
+
+	<br>
+</div>
+
+<br>
+
+{% endblock %}

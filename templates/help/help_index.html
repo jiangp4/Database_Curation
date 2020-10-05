@@ -1,0 +1,23 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<h2>Curation Workflow</h2>
+
+<p>The curation procedure has two stages: identification of relevant datasets and the annotation of sample information. In phase one, curators should identify datasets related to a specific study topic by reading the title, summary, design sections, and sample meta-information tables. In step two, for each identified relevant dataset, the curators should interpret the sample meta information and create standardized columns that automatic programs can analyze. Before any curation work, please get into main menu <a href="/project/project_select/">PROJECT -> SELECT</a> to make the project selection.</p>
+<ol>
+	<li><strong>Stage One</strong>: <a href="/help/help_dataset/">Identify relevant datasets</a></li>
+	<li><strong>Stage Two</strong>: <a href="/help/help_sample/">Annotate sample conditions</a></li>
+</ol>
+
+<p>
+Note: Please use Google Chrome for the best performance. Firefox and Safari also work, although the regular expression functions will be compromised. This platform <strong>does NOT work on IE</strong>.</p>
+
+</div>
+
+{% endblock %}

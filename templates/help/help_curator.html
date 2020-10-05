@@ -1,0 +1,23 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<h2>Curator preference</h2>
+<p>Most of the fields in the curator information setup are obvious, except for the following options.</p>
+
+<img src="{% static 'img/Annotation Curator.png' %}" style="width:30%;">
+<br><br>
+
+<ol>
+	<li><strong>Highlight keywords</strong>. If you have input keywords in your project setup, all annotation pages will display matches by triggering Javascript. If this step takes too long, you can disable this flag.</li>
+	<li><strong>Show curated</strong>. After you have determined the relevance of each dataset, the default option is to not show it again when you open the annotation page again. But you can open this flag to review all determined datasets.</li>
+</ol>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+
+<script type="text/javascript">
+
+//When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event)
+{
+	if (event.target.className == "modal") {
+		event.target.style.display = "none";
+	}
+}
+
+// load functions after loading whole documents
+$(document).ready(function() {
+	
+	// Table to CSV file
+	$("#export_table_data").click(
+		function (event) {
+			var outputFile = window.prompt("Please input the name of output csv file ?") || 'export_{{data.title}}';
+			outputFile = outputFile.replace('.csv','') + '.csv';
+			export_table_csv.apply(this, [$('#table_data > table'), outputFile]);
+		}
+	);
+
+	//Table sorting
+	$("table").tablesorter({
+		// table column resizable
+		widgets: ['resizable'],
+		widgetOptions: {resizable: true},
+	});
+});
+
+</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row">
+
+<h2>{{title}}</h2>
+<p>Total datasets {{stat_map.total}}, Active datasets {{stat_map.active}}</p>
+
+<div id="table_data">
+	<table id="table_curator" class="tablesorter">
+		<thead>
+		<tr>
+			{% for v in stat_map.header %}<th>{{v}}</th>{% endfor %}
+		</tr>
+		</thead>
+		
+		<tbody>
+			{% for line in stat_map.table %}
+			<tr> 
+				{% for v in line %}
+					{% if forloop.counter == 1 %}
+						<td>
+							<a onclick="popup_window('user_modal_{{v.0}}', 'open')">{{v.0}}</a>
+							
+							<!-- Curator information -->
+							<div id="user_modal_{{v.0}}" class="modal">
+								<div class="modal-content">
+									<span id="user_close_{{forloop.counter}}" class="close" onclick="popup_window('user_modal_{{v.0}}', 'close')">&times;</span>
+									
+									<p>First name: {{v.1.first_name}}</p>
+									<p>Last name: {{v.1.last_name}}</p>
+									<p>Email: {{v.1.email}}</p>
+									<p>Institute: {{v.1.institute}}</p>
+									<p>Education: {{v.1.education}}</p>
+									<p>Birth date: {{v.1.birth_date}}</p>
+									<p>Bio: {{v.1.bio}}</p>
+								</div>
+							</div>
+							
+						</td>
+					{% else %}
+						<td>{{v}}</td>
+					{% endif %}
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	
+	<div class='button' align="left">
+		<a role="button" id="export_table_data" title="Download the HTML table to excel CSV.">
+			Export to CSV
+		</a>
+	</div>
+
+</div>
+</div>
+<br>
+
+{% endblock %}

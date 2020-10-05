@@ -1,0 +1,5 @@
+*~
+*.pyc
+sql
+data
+settings.py

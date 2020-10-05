@@ -1,0 +1,25 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+
+<script type="text/javascript">
+$(document).ready(function() {
+	$("#id_birth_date").datetimepicker({format: 'Y-m-d'});
+})
+</script>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row">
+	<h2>Sign up</h2>
+	<form method="post">
+	{% csrf_token %}
+		{{ form.as_p }}
+		<button type="submit">Sign up</button>
+	</form>
+</div>
+
+{% endblock %}

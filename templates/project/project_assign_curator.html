@@ -1,0 +1,162 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+
+<script type="text/javascript">
+
+//When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event)
+{
+	if (event.target.className == "modal") {
+		event.target.style.display = "none";
+	}
+}
+
+// load functions after loading whole documents
+$(document).ready(function() {
+	
+	//Table sorting
+	$("table").tablesorter({
+		// table column resizable
+		widgets: ['resizable'],
+		widgetOptions: {resizable: true},
+		
+		// use different sorters for input text and option selection
+		headers:{
+			{% for v in data.header %}
+				{% if v == "Select" %}
+					{{forloop.counter0}}:{sorter:'checkbox'},
+				{% endif %}
+			{% endfor %}
+		},
+	});
+	
+	
+	//Submit table data back to server
+	$("#submit_table_data").click(
+		function (event)
+		{
+			if(confirm("Do you confirm that you are about to modify curators?"))
+			{
+				var table = $('table#table_curator').tableToJSON({
+					extractor: get_table_cell,
+					});
+				
+				event.preventDefault();
+				
+				$.ajaxSetup({
+					headers: { "X-CSRFToken": "{{csrf_token}}"}
+				});
+					
+				$.ajax({
+					type : "POST",
+					contentType: 'application/json; charset=utf-8',
+					data : JSON.stringify({'table': table}),
+						
+					success : function(result, status, xhr){
+						alert(result.message);
+						location.reload();
+					},
+					
+					error : function(xhr, errmsg, err){
+						alert(err + ': ' + xhr.responseJSON.error);
+					},
+				});
+			}
+		}
+	);
+});
+
+</script>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row">
+
+<div class="large-5 columns">
+<h2>Assign curators</h2>
+<h2>{{title}} project</h2>
+{% if message is not None %}
+	<p>{{message}}</p>
+{% endif %}
+
+	<form class="form-inline" action="" method="post" id="curator_search" name="siteSearchForm">
+	{% csrf_token %}
+		<fieldset>
+			<input type="text" id="curator_username" placeholder="type curator username" class="searchString ui-autocomplete-input"
+				name="curator_username" value="" style="width:20em;">
+				
+			<button type="Submit">Add</button>
+			<br>
+			<label title="Assign user as an owner with all permissions.">As Owner</label>
+			<input type="checkbox" id="add_owner_checkbox" name="add_owner_checkbox" title="Assign user as an owner with all permissions." onclick="alert_checkbox_select('add_owner_checkbox', 'Are you sure you want to add an owner with super user permit?')">
+		
+		</fieldset>
+	</form>
+
+</div>
+
+
+<div class="large-7 columns">
+
+<h2>Existing curators</h2>
+
+<div id="table_data">
+	<table id="table_curator" class="tablesorter">
+		<thead>
+		<tr>
+			{% for v in data.header %}<th>{{v}}</th>{% endfor %}
+		</tr>
+		
+		</thead>
+		
+		<tbody>
+			{% for line in data.table %}
+			<tr> 
+				{% for v in line %}
+					{% if forloop.counter == 1 %}
+						<td><a href="{{v.1}}" target="_blank">{{v.0}}</a></td>
+						<!-- 
+							<a onclick="popup_window('user_modal_{{v.0}}', 'open')">{{v.0}}</a>
+							
+							<div id="user_modal_{{v.0}}" class="modal">
+								<div class="modal-content">
+									<span id="user_close_{{forloop.counter}}" class="close" onclick="popup_window('user_modal_{{v.0}}', 'close')">&times;</span>
+									
+									<p>First name: {{v.1.first_name}}</p>
+									<p>Last name: {{v.1.last_name}}</p>
+									<p>Email: {{v.1.email}}</p>
+									<p>Institute: {{v.1.institute}}</p>
+									<p>Education: {{v.1.education}}</p>
+									<p>Birth date: {{v.1.birth_date}}</p>
+									<p>Bio: {{v.1.bio}}</p>
+								</div>
+							</div>
+						 -->
+					{% elif forloop.counter == line|length %}
+						<td><input type="checkbox" checked {{v}}></td>
+					{% else %}
+						<td>{{v}}</td>
+					{% endif %}
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="button">
+	<a role="button" id="submit_table_data">Modify</a>
+</div>
+
+<br><br>
+
+</div>
+
+</div>
+
+{% endblock %}
