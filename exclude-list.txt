@@ -1,8 +1,8 @@
 data
 admin
 celery_progress
-settings.py
 log
+venv36
 migrations
 *.pyc
 .git

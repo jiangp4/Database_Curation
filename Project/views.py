@@ -19,7 +19,7 @@ from .utils import parse_keywords
 from Database_Curation.settings import data_path
 
 from Database.tasks import prepare_curation_list
-from celery.result import AsyncResult
+#from celery.result import AsyncResult
 from Project.models import Association_Project_Dataset
 from Database.models import Dataset
 

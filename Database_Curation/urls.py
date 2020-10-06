@@ -46,7 +46,7 @@ urlpatterns = [
     
     path('download_delete/<path:f>/', views.send_file_delete, name='send_file_delete'),
     
-    re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
+    #re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
     
     re_path(r'^favicon\.ico$', RedirectView.as_view(url='/static/img/favicon.ico')),
 ]
