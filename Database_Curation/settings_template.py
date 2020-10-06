@@ -22,7 +22,7 @@ script_path = os.path.join(BASE_DIR, 'script')
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'frzh(yi+!r3$qiq*_mv$(na_%*y9&)3$@3b*8uh@=rptoh9fci'
+SECRET_KEY = 'XXX'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
