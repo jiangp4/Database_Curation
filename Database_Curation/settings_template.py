@@ -25,7 +25,7 @@ script_path = os.path.join(BASE_DIR, 'script')
 SECRET_KEY = 'frzh(yi+!r3$qiq*_mv$(na_%*y9&)3$@3b*8uh@=rptoh9fci'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
