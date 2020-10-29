@@ -38,13 +38,11 @@ class Command(BaseCommand):
     
     
     def handle(self, *args, **options):
-        self.get_not_curated(4, options['output'][0])
+        #self.get_not_curated(4, options['output'][0])
         
-        return
-    
         cnt_thres = 10000 #options['count'][0]
         
-        #Dataset.objects.all().delete()
+        Dataset.objects.all().delete()
         
         """
         included = set()
@@ -53,10 +51,10 @@ class Command(BaseCommand):
         fin.close()
         """
     
-        included = set(['GSE36202'])
+        #included = set(['GSE36202'])
         
-        # , 'AE'
-        for database in ['GEO']:
+        # 
+        for database in ['GEO', 'AE']:
             database_path = os.path.join(data_path, database, 'Data')
             
             ID_lst = os.listdir(database_path)
@@ -64,7 +62,7 @@ class Command(BaseCommand):
             for ID in ID_lst:
                 fprefix = os.path.join(database_path, ID, ID)
                 
-                if ID not in included: continue
+                #if ID not in included: continue
                 print(ID)
                         
                 meta = fprefix + '.meta.summary'
@@ -85,7 +83,6 @@ class Command(BaseCommand):
                         if data.shape[0] >= cnt_thres: processed_lst.append(f)
                     fin.close()
                 
-                """
                 Dataset.objects.create(
                     ID=ID,
                     database=database,
@@ -98,7 +95,6 @@ class Command(BaseCommand):
                     count = meta['count'],
                     processed_data = '\t'.join(processed_lst)
                     )
-                """
                 
                 """
                 dataset = Dataset.objects.get_or_create(ID=ID, database=database)[0]
@@ -113,6 +109,8 @@ class Command(BaseCommand):
                 dataset.processed_data = '\t'.join(processed_lst)
                 """
                 
+                """
                 dataset = Dataset.objects.get(ID=ID, database=database)
                 dataset.processed_data = '\t'.join(processed_lst)
                 dataset.save()
+                """
