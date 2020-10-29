@@ -33,7 +33,10 @@ class ProjectCreateView(generic.CreateView):
     def get_initial(self):
         projects = Project.objects.all()
         
-        max_ID = max([v.ID for v in projects])
+        if len(projects) == 0:
+            max_ID = -1
+        else:
+            max_ID = max([v.ID for v in projects])
         
         return {
             'ID': max_ID + 1,
