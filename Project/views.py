@@ -126,8 +126,9 @@ def filter_project_dataset_by_keywords(project):
         
         if not flag:
             meta_info = os.path.join(data_path, dataset.database, 'Data', dataset.ID, dataset.ID + '.meta')
-                        
-            fin = open(meta_info)
+            
+            # somehow python3.6 needs these additional flags
+            fin = open(meta_info, 'r', encoding='utf-8', errors='ignore')
             for l in fin:
                 for keyword in keywords:
                     if keyword.search(l) is not None:
