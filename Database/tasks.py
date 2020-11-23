@@ -40,7 +40,7 @@ def prepare_curation_list(GEO_search, AE_search, ID_list, project=None, curators
     
     if GEO_search is not None:
         try:
-            fin = open(GEO_search)
+            fin = open(GEO_search, 'r', encoding='utf-8', errors='ignore')
             for l in fin:
                 fields = l.rstrip().split()
                 if len(fields) > 0 and fields[0] == 'Series':
