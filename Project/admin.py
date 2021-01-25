@@ -4,9 +4,9 @@ from .models import Project, Association_Project_Curator, Association_Project_Da
 
 # Register your models here.
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('ID', 'title', 'description', 'public', 'fields', 'keywords', 'keywords_filter', 'processed_filter', 'vocabulary', 'vocabulary_map')
+    list_display = ('ID', 'title', 'description', 'public', 'approved', 'fields', 'keywords', 'keywords_filter', 'processed_filter', 'vocabulary', 'vocabulary_map')
     ordering = ('ID',)
-    search_fields = ('ID', 'title', 'description', 'public', 'fields', 'keywords', 'keywords_filter', 'processed_filter', 'vocabulary', 'vocabulary_map')
+    search_fields = ('ID', 'title', 'description', 'public', 'approved', 'fields', 'keywords', 'keywords_filter', 'processed_filter', 'vocabulary', 'vocabulary_map')
 
 admin.site.register(Project, ProjectAdmin)
 

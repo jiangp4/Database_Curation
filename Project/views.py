@@ -8,21 +8,21 @@ from django.views import generic
 from django.http.response import JsonResponse
 from django.urls.base import reverse_lazy
 from django.shortcuts import redirect
+from django.core.mail import EmailMessage
 
 from Account.models import Curator
 from Curation.models import Curation
 
 from .models import Project, Association_Project_Curator, TaskUpload
-from .forms import ProjectCreateForm, ProjectUpdateForm, ProjectDeleteForm, TaskUploadForm
+from .forms import ProjectApproveForm, ProjectCreateForm, ProjectUpdateForm, ProjectDeleteForm, TaskUploadForm
 from .utils import parse_keywords
 
-from Database_Curation.settings import data_path
+from Database_Curation.settings import data_path, EMAIL_HOST_USER
 
 from Database.tasks import prepare_curation_list
 #from celery.result import AsyncResult
 from Project.models import Association_Project_Dataset
 from Database.models import Dataset
-
 
 
 class ProjectCreateView(generic.CreateView):
@@ -55,16 +55,34 @@ class ProjectCreateView(generic.CreateView):
 
 def project_create_complete(request, ID):
     project = Project.objects.get(pk=ID)
+    curator = Curator.objects.get(pk=request.user.id)
     
     # set up owner as its own curator
     Association_Project_Curator.objects.create(
         project = project,
-        curator = Curator.objects.get(pk=request.user.id),
+        curator = curator,
         owner = True,
         active = False,
         )
     
-    return render(request, 'complete.html', {'title': 'project create complete', 'description': 'Please select project if necessary.'})
+    emails = Curator.objects.filter(is_superuser=True).values_list('email')
+    emails = [email[0] for email in emails]  
+    
+    message = project_approval_message(request, project)
+    
+    email = EmailMessage(
+        'New project created', message, EMAIL_HOST_USER, emails, reply_to=[EMAIL_HOST_USER]
+        )
+    
+    email.content_subtype = "html"
+        
+    try:
+        email.send()
+    
+    except:
+        return render(request, 'error.html', {'message': 'Failure while sending email to administrator', 'GOHOME': 5})
+    
+    return render(request, 'complete.html', {'title': 'project create complete', 'description': 'Administrator will review your project before approval. Please wait for further email notice.'})
 
 
 
@@ -91,13 +109,17 @@ class ProjectUpdateView(generic.UpdateView):
     
     
     def form_valid(self, form):
-        self.keyword_change = int('keywords' in form.changed_data)
-        
+        self.keyword_change = int('keywords' in form.changed_data)        
+        self.display_change = int(('title' in form.changed_data) or ('description' in form.changed_data))
+    
         return super(ProjectUpdateView, self).form_valid(form)
     
     
     def get_success_url(self):
-        return reverse_lazy('project_update_complete', kwargs={'flag': self.keyword_change})
+        return reverse_lazy('project_update_complete', kwargs={
+            'keyword_change': self.keyword_change,
+            'display_change': self.display_change,
+            })
 
 
 
@@ -141,17 +163,141 @@ def filter_project_dataset_by_keywords(project):
         association.active = flag
         association.save()
         
+
+
+
+class ProjectApproveView(generic.UpdateView): 
+    form_class = ProjectApproveForm
+    
+    fail_url = reverse_lazy('project_select')
+    
+    template_name = 'form.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            curator = Curator.objects.get(pk=request.user.id)
+        except:
+            return render(request, 'error.html', {'message': 'Cannot load current user information.', 'GOHOME': 5})
         
+        # check if there is some video onsite
+        if not curator.is_superuser:
+            return render(request, 'error.html', {'message': 'Only administrator is allowed for this approval page', 'GOHOME': 5})
+        else:
+            return super(ProjectApproveView, self).dispatch(request, *args, **kwargs)
+    
+    
+    def get_object(self):
+        self.ID = self.kwargs['ID']
+        return get_object_or_404(Project, pk=self.kwargs['ID'])
+
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['button'] = "Submit"
+        return context
+    
+    
+    def form_valid(self, form):
+        self.flag = 1   # every thing is OK
+        
+        #if 'approved' in form.changed_data:
+        project = Project.objects.get(pk = self.ID)
+            
+        emails = Association_Project_Curator.objects.filter(project=project, owner=True)
+        emails = [e.curator.email for e in emails]
+            
+        emails_super = Curator.objects.filter(is_superuser=True).values_list('email')
+        emails_super = [email[0] for email in emails_super]
+            
+        email = EmailMessage(
+            'Curation Project Approval', form.cleaned_data['message'], EMAIL_HOST_USER, emails, reply_to=emails_super
+            )
+        
+        try:
+            email.send()
+        except:
+            self.flag = 0 # email send failure  
+        
+        return super(ProjectApproveView, self).form_valid(form)
+    
+    
+    def get_success_url(self):
+        return reverse_lazy('project_approve_complete', kwargs={
+            'ID': self.ID,
+            'flag': self.flag,
+            })
 
 
 
-def project_update_complete(request, flag):
+def project_approve_complete(request, ID, flag):
+    curator = Curator.objects.get(pk=request.user.id)
+    
+    if not curator.is_superuser:
+        return render(request, 'error.html', {'message': 'Only administrator is allowed for this approval complete page', 'GOHOME': 5})
+    
+    if not flag:
+        return render(request, 'error.html', {'message': 'Failure while sending email to project owners', 'GOHOME': 5})
+    
+    project = Project.objects.get(pk = ID)
+    return render(request, 'complete.html', {'title': 'project %s approval complete' % project.title, 'description': project.description})
+
+
+
+def project_approval_message(request, project):
+    # generate email message for project approval
+    
+    if request.is_secure():
+        http = 'https'
+    else:
+        http = 'http'
+    
+    URL = '%s://%s/project/project_approve/%d/' % (http, request.META['HTTP_HOST'], project.ID)
+    
+    owners = Association_Project_Curator.objects.filter(project=project, owner=True)
+    owners = [e.curator.username for e in owners]
+    
+    message = '<html> \
+        Owner: %s <br>\
+        Title: %s <br>\
+        Summary: %s <br>\
+        <a href="%s">Approve</a>\
+        </html>' % (','.join(owners), project.title, project.description, URL)
+    
+    return message
+
+
+
+def project_update_complete(request, keyword_change, display_change):
     project = Project.objects.get(pk = request.session['project_select'])
     
     # only filter data if the keyword filters are changed
-    if flag: filter_project_dataset_by_keywords(project)
+    if keyword_change:
+        filter_project_dataset_by_keywords(project)
     
-    return render(request, 'project/project_update_complete.html')
+    message_display = ''
+    
+    if display_change:
+        
+        message = project_approval_message(request, project)
+        
+        emails = Curator.objects.filter(is_superuser=True).values_list('email')
+        emails = [email[0] for email in emails]  
+        
+        email = EmailMessage(
+            'Project updated', message, EMAIL_HOST_USER, emails, reply_to=[EMAIL_HOST_USER]
+            )
+        
+        email.content_subtype = "html"
+        
+        message_display = 'Administrator will review your project update before approval. Please wait for further email notice.'
+                
+        try:
+            email.send()
+        
+        except:
+            return render(request, 'error.html', {'message': 'Failure while sending email to administrator', 'GOHOME': 5})
+        
+    return render(request, 'complete.html', {'title': 'project update complete', 'description': message_display})
 
 
 
@@ -171,7 +317,7 @@ class ProjectDeleteView(generic.DeleteView):
 
 
 def project_delete_complete(request):
-    return render(request, 'project/project_delete_complete.html')
+    return render(request, 'complete.html', {'title': 'project delete complete', 'description': 'This project no longer exist.'})
 
 
 
@@ -251,8 +397,9 @@ def project_select(request):
     
     data_map['table'] = data = []
     
-    #projects = Project.objects.all()
+    # , project__approved = True
     associations = Association_Project_Curator.objects.filter(curator__username = request.user.username)
+    
     projects = [association.project for association in associations]
     
     for project in projects:
@@ -383,7 +530,7 @@ def project_list(request):
     
     data_map['simple_mode'] = True
     
-    projects = Project.objects.filter(public=True)
+    projects = Project.objects.filter(public=True, approved=True)
     
     for project in projects:
         owners = Association_Project_Curator.objects.filter(project=project, owner=True)

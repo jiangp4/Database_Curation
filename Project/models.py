@@ -13,6 +13,9 @@ class Project(models.Model):
     # public visible or private project
     public = models.BooleanField('public', default=True)
     
+    # whether the current project is approved
+    approved = models.BooleanField('approved', default=False)
+    
     fields = models.TextField('fields', blank=True)
     
     keywords = models.TextField('keywords', blank=True)

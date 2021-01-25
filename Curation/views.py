@@ -26,6 +26,9 @@ def dataset_table(request):
     
     project = Project.objects.get(pk=project_ID)
     
+    if not project.approved:
+        return render(request, 'error.html', {'message': 'Project not approved.', 'GOHOME': 5})
+    
     # check if user is owner
     association = Association_Project_Curator.objects.filter(project=project, curator=request.user)
     assert association.count() == 1
@@ -214,6 +217,9 @@ def sample_table(request, title, curator=None):
     if project_select is None: return render(request, 'error.html', {'message': 'User not login or project not selected'})
     
     project_select = Project.objects.get(ID=project_select)
+    
+    if not project_select.approved: return render(request, 'error.html', {'message': 'Project not approved.', 'GOHOME': 5})
+    
     
     if curator is None: curator = request.user.id
     
