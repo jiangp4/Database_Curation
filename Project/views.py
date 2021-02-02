@@ -239,6 +239,7 @@ def project_approve_complete(request, ID, flag):
         return render(request, 'error.html', {'message': 'Failure while sending email to project owners', 'GOHOME': 5})
     
     project = Project.objects.get(pk = ID)
+    
     return render(request, 'complete.html', {'title': 'project %s approval complete' % project.title, 'description': project.description})
 
 

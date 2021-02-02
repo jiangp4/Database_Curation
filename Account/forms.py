@@ -11,7 +11,7 @@ field_introductions = {
 class CuratorCreateForm(UserCreationForm):
     class Meta:
         model = Curator
-        fields = ('username', 'first_name', 'last_name', 'email', 'birth_date', 'institute', 'education', 'url', 'bio', 'keywords_highlight', 'show_curated')
+        fields = ('username', 'first_name', 'last_name', 'email', 'institute', 'education', 'url', 'bio', 'keywords_highlight', 'show_curated')
         
         widgets = field_introductions
 
@@ -19,7 +19,7 @@ class CuratorCreateForm(UserCreationForm):
 class CuratorUpdateForm(UserChangeForm):
     class Meta:
         model = Curator
-        fields = ('first_name', 'last_name', 'email', 'birth_date', 'institute', 'education', 'url', 'bio', 'keywords_highlight', 'show_curated')
+        fields = ('first_name', 'last_name', 'email', 'institute', 'education', 'url', 'bio', 'keywords_highlight', 'show_curated')
         
         widgets = {
             **{

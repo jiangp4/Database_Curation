@@ -302,6 +302,12 @@ meta.foundation-mq-large {
     margin-right: auto;
     float: none !important; } }
 
+
+.errorlist
+{
+	color: red;
+}
+ 
 /* Styles for screens that are atleast 768px; */
 @media screen and (min-width: 641px) {
   .large-1 {
