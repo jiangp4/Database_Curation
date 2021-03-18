@@ -9,6 +9,7 @@ from django.http.response import JsonResponse
 from django.urls.base import reverse_lazy
 from django.shortcuts import redirect
 from django.core.mail import EmailMessage
+from django.db import transaction
 
 from Account.models import Curator
 from Curation.models import Curation
@@ -598,6 +599,7 @@ class TaskUploadView(generic.CreateView):
 
 
 
+@transaction.atomic
 def task_upload_download(request, pk):
     task_upload = TaskUpload.objects.get(pk=pk)
     f = task_upload.task_file.path

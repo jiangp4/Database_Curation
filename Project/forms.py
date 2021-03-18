@@ -77,5 +77,5 @@ class TaskUploadForm(ModelForm):
             }
         
         labels = {
-            'add': 'add or remove uploaded dataset IDs',
+            'add': 'add (check) or remove (uncheck) uploaded dataset IDs',
         }
