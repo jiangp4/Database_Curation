@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['*']
 
 ADMINS = [
     ('Peng Jiang', 'peng.jiang@nih.gov'),
+    ('Rohit Paul', 'paulr@mail.nih.gov'),
 ]
 
 # Application definition
