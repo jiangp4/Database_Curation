@@ -23,7 +23,7 @@ class ProjectApproveForm(ModelForm):
     # for super user only
     class Meta:
         model = Project
-        #fields = ('title', 'description', 'approved')
+        
         fields = ('title', 'description', 'approved')
         
         widgets = {
@@ -46,7 +46,7 @@ class ProjectCreateForm(ModelForm):
 class ProjectUpdateForm(ModelForm):
     class Meta:
         model = Project
-        fields = ('ID', 'title', 'description', 'public', 'approved', 'fields', 'keywords', 'keywords_filter', 'processed_filter', 'vocabulary', 'vocabulary_map')
+        fields = ('ID', 'title', 'description', 'public', 'fields', 'keywords', 'keywords_filter', 'processed_filter', 'vocabulary', 'vocabulary_map')
         widgets = field_introductions
 
 

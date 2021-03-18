@@ -279,6 +279,9 @@ def project_update_complete(request, keyword_change, display_change):
     message_display = ''
     
     if display_change:
+        # display information changed, let'
+        project.approved = False
+        project.save()
         
         message = project_approval_message(request, project)
         
