@@ -14,11 +14,20 @@ $(document).ready(function() {
 {% block content %}
 
 <div class="row">
+	
 	<h2>Sign up</h2>
+	
+	<h3>
+	For Non-Commercial Purpose Only. For-profit entities, Please read our software agreement below.
+	</h3>
+	
 	<form method="post">
 	{% csrf_token %}
 		{{ form.as_p }}
-		<button type="submit">Sign up</button>
+		
+		<div class="slot-item only-SI large-6 column"><a href="/accounts/agreement/" target="blank_"><input type="text" class="button" value="View FDC Use Agreement"></a></div>
+		<div class="slot-item only-SI large-2 column"><button type="submit">I Agree</button></div>
+		
 	</form>
 </div>
 

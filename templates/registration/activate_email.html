@@ -1,6 +1,32 @@
-{% autoescape off %} 
-Hi {{ user.username }},
-Please click on the link to confirm your registration,
-{{ domain }}{% url 'activate' uidb64=uid %}
-If you think, it's not you, then just ignore this email.
+{% autoescape off %}
+<html>
+<head></head>
+
+<body>
+<p>Hi {{ user.username }},</p>
+
+<p>By clicking the link below to confirm your registration, you have agreed the <a href="{{ domain }}/accounts/agreement/" target="blank_">Use Agreement for FDC</a>, proprietary to the National Cancer Institute (NCI).</p>
+
+<p><a href="{{ domain }}{% url 'activate' uidb64=uid %}" target="blank_">I confirm for non-profit research purposes</a></p>
+
+<p>Any use by a for-profit entity, please requires a separate trial or complete license from the NCI by email <a href="mailto:peng.jiang@nih.gov">Dr. Peng Jiang</a> and <a href="mailto:changke@mail.nih.gov">Kevin Chang</a>.</p>
+
+<p>If you think, it's not you, then just ignore this email.</p>
+
+
+<p>
+Sincerely, Peng <br>
+================================= <br>
+Peng Jiang, Ph.D. <br>
+
+Stadtman Tenure-Track Investigator <br>
+Center for Cancer Research <br>
+National Cancer Institute, National Institutes of Health <br>
+Building 10, Room 6N119 <br>
+Bethesda, Maryland 20892, USA <br>
+Homepage: <a href="https://ccr.cancer.gov/cancer-data-science-laboratory/peng-jiang" target="blank_">https://ccr.cancer.gov/cancer-data-science-laboratory/peng-jiang</a> <br>
+</p>
+
+</body>
+</html>
 {% endautoescape %}

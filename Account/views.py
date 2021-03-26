@@ -7,7 +7,6 @@ from Account.forms import CuratorCreateForm, CuratorUpdateForm
 from Account.models import Curator
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from django.http import HttpResponse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
@@ -44,10 +43,14 @@ class CuratorCreateView(generic.CreateView):
         to_email = form.cleaned_data.get('email')
         
         email = EmailMessage(mail_subject, message, to=[to_email])
+        email.content_subtype = "html"
         email.send()
         
         return super(CuratorCreateView, self).form_valid(form)
 
+
+def agreement(request):
+    return render(request, 'registration/agreement.html')
 
 
 def activate(request, uidb64):
@@ -63,9 +66,9 @@ def activate(request, uidb64):
         user.is_active = True
         user.save()
     
-        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+        return render(request, 'complete.html', {'title': 'User account create complete', 'description': 'Thank you for your email confirmation. Now you can login your account.'})
     else:
-        return HttpResponse('Activation link is invalid!')
+        return render(request, 'error.html', {'message': 'Activation link is invalid!'})
 
 
 
@@ -87,7 +90,7 @@ class CuratorDetailView(generic.DetailView):
 
 
 def curator_create_complete(request):
-    return render(request, 'complete.html', {'title': 'User account create complete', 'description': 'Please login to access your account.'})
+    return render(request, 'complete.html', {'title': 'User account create complete', 'description': 'Please check your email and confirm the registration.'})
 
 
 def curator_update_complete(request):
