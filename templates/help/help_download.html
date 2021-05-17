@@ -1,0 +1,54 @@
+{% extends "base_main.html" %}
+
+{% block head %}
+{% load static %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+<h2>Download curated data and automatic processing</h2>
+
+<div class="slot-item only-SI large-6 columns">
+<p>
+<b>Step 1</b>: You can download all curated sample annotations and automatically processed expression matrices (if available). Please click <a href="/curation/result/" target="_blank">CURATION -> RESULTS</a> while you have <a href="/project/project_select/" target="_blank">selected a project</a>.
+</p>
+</div>
+
+<div class="slot-item only-SI large-6 columns">
+<img src="{% static 'img/Download Result.png' %}">
+</div>
+
+</div>
+
+<br><br>
+
+<div class="row">
+<div class="slot-item only-SI large-6 columns">
+<p>
+<b>Step 2</b>: Then, go to the bottom page and click the <b>Download</b> button to download a file with URLs to sample annotations and data matrices.
+</p>
+</div>
+
+<div class="slot-item only-SI large-6 columns">
+<img src="{% static 'img/Download Meta.png' %}">
+</div>
+
+</div>
+
+<br><br>
+
+<div class="row">
+<p>
+<b>Step 3</b>: After getting the result file with URL list, you can download all files with "wget" or "python urllib", and develop an automatic analysis script. 
+
+Here is <a href="https://github.com/data2intelligence/FDC_treatment_profile" target="_blank">an example python program</a> to download files and process data from a download result file with URLs (from Step 2). In this example, curators annotated "Treatment, Condition, Sub Condtion, Curation, Dose" followed the <a href="https://drive.google.com/file/d/1QsfjXm3hmhduUJqsD8MlzLtj5qAB0BzH/view?usp=sharing" target="_blank">Human Cytokine Response Project</a> requirement. With these annotations and processed expression matrices from FDC, an automatic python script can generate differential expression profiles for treatments.
+<br><br>
+
+When you design the curation scheme, an essential criterion is to make sure that <b>annotation fields should enable automatic analysis without further human intervention</b>. If not, please redesign the annotation fields and curation schemes.
+
+</p>
+</div>
+
+{% endblock %}

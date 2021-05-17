@@ -452,7 +452,7 @@ def result_table(request):
                 meta_annotation = os.path.join(project_path, str(curation.curator.id), curation.dataset.ID + '.meta')
                 
                 if os.path.exists(meta_annotation):
-                    fout.write(request.build_absolute_uri('/download/%s/' % os.path.relpath(meta_annotation, data_path)) + '\n')
+                    fout.write(request.build_absolute_uri('/download/%s' % os.path.relpath(meta_annotation, data_path)) + '\n')
                     datasets.add(curation.dataset)
             
             # part 2 : data matrix
@@ -461,7 +461,7 @@ def result_table(request):
                     processed_data_lst = dataset.processed_data.split('\t')
                     
                     for f in processed_data_lst:
-                        fout.write(request.build_absolute_uri('/download/%s/' % os.path.join(dataset.database, 'Data', dataset.ID, f)) + '\n')
+                        fout.write(request.build_absolute_uri('/download/%s' % os.path.join(dataset.database, 'Data', dataset.ID, f)) + '\n')
             
             fout.close()
             
