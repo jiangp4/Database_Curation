@@ -628,9 +628,10 @@ def task_upload_download(request, pk):
         curators = curators.split('\n')
         curators = [Curator.objects.get(username=curator.strip()) for curator in curators]
     
-    # first, clear all previous empty assignments
-    for curator in curators:
-        Curation.objects.filter(project=project, curator=curator, category='').delete()
+    #removed to allow multiple task uploads
+    ## first, clear all previous empty assignments
+    #for curator in curators:
+    #    Curation.objects.filter(project=project, curator=curator, category='').delete()
     
     # From Celery
     result, error = prepare_curation_list(GEO_search, AE_search, ID_list, project=project, curators = [curator.pk for curator in curators], flag_add_delete = task_upload.add)
