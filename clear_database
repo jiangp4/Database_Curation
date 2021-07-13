@@ -6,4 +6,4 @@ mysqladmin -u peng_jiang -pNCI_PJ_123 create Database_Curation
 
 python manage.py makemigrations
 python manage.py migrate
-#python manage.py createsuperuser
+python manage.py createsuperuser

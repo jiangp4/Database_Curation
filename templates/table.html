@@ -498,6 +498,21 @@ td:before {
 	
 	<fieldset>
 		<div>
+			<label title="Record the action history of assist functions">History</label>
+			<div class="vr">&nbsp;</div>
+			
+			<div class="button">
+			<a href="#" role="button" id="annotation_undo_button" onclick="undostack_table.undo();load_auto_complete();" title="Undo one step action">&laquo; Undo</a>
+			</div>
+			
+			<div class="button">
+			<a href="#" role="button" id="annotation_redo_button" onclick="undostack_table.redo();load_auto_complete();" title="Redo one step action">Redo &raquo;</a>
+			</div>
+		</div>
+		
+		<br><br>
+		
+		<div>
 			<label title="Column selector for assist functions">Column</label>
 	
 			<select id="select_src_column">
@@ -523,8 +538,13 @@ td:before {
 			</div>
 			
 			<div class="vr">&nbsp;</div>
+			
 			<div class="button">
-			<a href="#" role="button" onclick="delete_table_column('table_main', 'select_dst_column');undostack_table.push();" title="Delete the destination column from table">Delete</a>
+			<a href="#" role="button" onclick="delete_table_column('table_main', 'select_src_column');undostack_table.push();" title="Delete the source column from table">Delete Source</a>
+			</div>
+			
+			<div class="button">
+			<a href="#" role="button" onclick="delete_table_column('table_main', 'select_dst_column');undostack_table.push();" title="Delete the destination column from table">Delete Destination</a>
 			</div>
 			
 			<div class="vr">&nbsp;</div>
@@ -537,21 +557,6 @@ td:before {
 				<input type="text" id="column_append_name" title="new destination column name" style="width:10em;" placeholder="new column name">
 			</div>
 			
-		</div>
-		
-		<div class="vr">&nbsp;</div><div class="vr">&nbsp;</div>
-		
-		<div>
-			<label title="Record the action history of assist functions">History</label>
-			<div class="vr">&nbsp;</div>
-			
-			<div class="button">
-			<a href="#" role="button" id="annotation_undo_button" onclick="undostack_table.undo();load_auto_complete();" title="Undo one step action">&laquo; Undo</a>
-			</div>
-			
-			<div class="button">
-			<a href="#" role="button" id="annotation_redo_button" onclick="undostack_table.redo();load_auto_complete();" title="Redo one step action">Redo &raquo;</a>
-			</div>
 		</div>
 		
 		<br>		
